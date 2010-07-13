@@ -1,0 +1,4 @@
+database: mysql://localhost/orange_apiwars
+main_user: therabidbanana@gmail.com
+db_no_auto_upgrade: false
+

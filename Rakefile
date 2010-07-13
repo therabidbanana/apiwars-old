@@ -5,11 +5,12 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "apiwars"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{A Game played with an API}
+    gem.description = %Q{apiwars, a game played with an API (based on Orange)}
     gem.email = "therabidbanana@gmail.com"
     gem.homepage = "http://github.com/therabidbanana/apiwars"
     gem.authors = ["David Haslem"]
+    gem.add_dependency "orange", ">= 0.5.7"
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_development_dependency "yard", ">= 0"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings

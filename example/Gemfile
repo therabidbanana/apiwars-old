@@ -1,0 +1,6 @@
+source "http://rubygems.org"
+gem "orange"
+gem "orange-core", :git => "git://github.com/therabidbanana/orange-core.git"
+gem "orange-more", :git => "git://github.com/therabidbanana/orange-more.git"
+gem "apiwars", :git => "git://github.com/therabidbanana/apiwars.git"
+gem "dm-mysql-adapter"
