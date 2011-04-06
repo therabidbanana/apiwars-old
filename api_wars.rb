@@ -138,6 +138,7 @@ class GridSpace
 
   def claim?(p1, unit)
     return false unless(self.player.nil? || self.player == p1)
+    return false unless unit
     digest = Digest::MD5.hexdigest(Player.secret_sauce + unit)
     atk = Integer("0x#{digest[0..1]}")
     dfn = Integer("0x#{digest[3..4]}")
@@ -150,6 +151,7 @@ class GridSpace
   end
   def attack?(p1, unit)
     return true if(claim?(p1, unit))
+    return false unless unit
     digest = Digest::MD5.hexdigest(Player.secret_sauce + unit)
     atk = Integer("0x#{digest[0..1]}")
     atk = atk  - self.defense
