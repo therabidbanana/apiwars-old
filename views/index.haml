@@ -7,7 +7,22 @@
   %body
     %h1 ApiWars
     %section
+      %h1 How to Play
+      %p 
+        Get your API key and set player
+        info by logging in:
+        %a{:href => "/auth/gihub"} with Github
+      %p 
+        Note this is not an open game. 
+        You must already be in the database
+        to be able to log in.
+    %section
       %h1 Current Status
+      %h2 Players:
+      %ul
+        %li therabidbanana
+        %li radicaleggnog
+      %h2 Board:
       %section.board
         - spaces.each do |s|
           .space{:id => s.id, :style => "background-color: #{s.color};"}
