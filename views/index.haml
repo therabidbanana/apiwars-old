@@ -23,8 +23,8 @@
       %h1 Current Status
       %h2 Players:
       %ul
-        %li therabidbanana
-        %li radicaleggnog
+        - players.each do |p|
+          %li= p.uid
       %h2 Board:
       %section.board
         - spaces.each do |s|

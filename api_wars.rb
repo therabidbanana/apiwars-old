@@ -417,7 +417,8 @@ end
 
 # Show a basic message with game status.
 get "/" do
-  haml :index, :locals => {:spaces => GridSpace.all}
+  expires 1800, :public, :must_revalidate
+  haml :index, :locals => {:spaces => GridSpace.all, :players => Player.all}
 end
 
 # This is how we allow players to access their
