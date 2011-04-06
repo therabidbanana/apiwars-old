@@ -1,0 +1,16 @@
+!!! 5
+%html
+  %head
+    %title ApiWars
+    %style
+      = '.board .space{width:8px;height:8px;float:left; border: 1px solid #bbb}'
+  %body
+    %h1 ApiWars
+    %section
+      %h1 Current Status
+      %section.board
+        - spaces.each do |s|
+          .space{:id => s.id, :style => "background-color: #{s.color};"}
+            = s.player ? s.player.id : '&nbsp;'
+    %section{:style => 'clear:both'}
+      %h1 What's this?

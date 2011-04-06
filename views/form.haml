@@ -1,0 +1,12 @@
+%form{:action => "/player/#{player.id}", :method => 'POST'}
+  %p Your API Key is: #{player.api}
+  %input{:type => "hidden", :value => player.api, :name => "key"}
+  %p
+    %label Pin
+    %br
+    %input{:type => 'text', :name => 'pin', :value => player.pin}
+  %p
+    %label Secret Sauce
+    %br
+    %input{:type => 'text', :name => 'sauce', :value => player.sauce}
+  %input{:type => 'submit'}
