@@ -120,6 +120,15 @@ class GridSpace
     return "#fff" unless player
     return "##{Digest::MD5.hexdigest(player.id.to_s)[0..5]}"
   end
+
+  def reset!
+    self.player = nil
+    self.attack = 0
+    self.defense = 0
+    self.hits = 0
+    self.save
+  end
+
   # Occupation
   # ----------
   #
@@ -135,7 +144,6 @@ class GridSpace
   # Several DELETEs may be necessary to remove an occupying 
   # unit.
   #
-
   def claim?(p1, unit)
     return false unless(self.player.nil? || self.player == p1)
     return false unless unit
@@ -181,10 +189,11 @@ class Player
   property :uid, String
   property :api, String
   property :sauce, String
-  property :pin, String
+  property :pin, String, :length => 4
   property :created_on, DateTime
   property :reset_on, DateTime, :default => DateTime.parse("1/1/11")
   property :daily_calls, Integer, :default => 0
+  has n, :grid_spaces
   
   #### The secret sauce
   # The secret sauce is a salt for all of the
@@ -228,9 +237,47 @@ class Player
       false
     end
   end
-  
-  # Resets the call count if it's been 24 hours since last
-  # reset. 
+ 
+  # The player may reset their pin at any time, but to do so they
+  # loose one of their squares. Pins must be 4 numeric digits,
+  # all other characters are replaced by 0.
+  def pin=(new_pin)
+    new_pin = "" unless new_pin
+    new_pin = new_pin[0..3] # Trim
+    new_pin = new_pin.gsub(/[^0-9]/, '0')
+    new_pin = new_pin.center(4, '0')
+    disown! unless self.pin == new_pin
+    super(new_pin)
+  end
+
+
+  # If a player resets their pin, this method is called
+  def disown!
+    if space = self.grid_spaces.first
+      space.reset!
+    end
+    self.grid_spaces.reload
+  end
+
+  # The player may reset their own sauce at any time. This
+  # changes the hashes that run the game for everyone, so
+  # to limit the destructive tendencies of players, they
+  # must be willing to give up their spaces.
+  def sauce=(new_sauce)
+    disown_all! unless self.sauce == new_sauce
+    super
+  end
+
+  # If a player resets their sauce, this method is called
+  def disown_all!
+    self.grid_spaces.each do |s|
+      s.reset!
+    end
+    self.grid_spaces.reload
+  end
+
+  # Every 24 hours the player gets their call count reset. This happens
+  # on their next call.
   def reset_if_possible
     now = DateTime.now
     reset_time = self.reset_on || DateTime.parse("1/1/11")
