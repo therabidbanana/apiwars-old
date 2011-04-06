@@ -218,8 +218,10 @@ class Player
     if can <= max
       self.daily_calls = can
       self.save
+      true
+    else
+      false
     end
-    return can
   end
   
   # Resets the call count if it's been 24 hours since last
