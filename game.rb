@@ -46,7 +46,9 @@ require 'oa-oauth'
 
 # Set your Github Key and Secret here, or with ENV variables
 # (good for heroku.)
-use OmniAuth::Strategies::GitHub, (ENV['GITHUB_KEY'] || '5ce55eaa17d66bf4f9cf'), (ENV['GITHUB_SECRET'] || '350137e0a82fd6402fddaa2992ff80b2ed46eff0')
+use OmniAuth::Strategies::GitHub, 
+  (ENV['GITHUB_KEY'] || '5ce55eaa17d66bf4f9cf'), 
+  (ENV['GITHUB_SECRET'] || '350137e0a82fd6402fddaa2992ff80b2ed46eff0')
 
 ### Database
 # Set your database url with an ENV variable or in place
@@ -56,21 +58,6 @@ use OmniAuth::Strategies::GitHub, (ENV['GITHUB_KEY'] || '5ce55eaa17d66bf4f9cf'),
 # posgres => dm-postgres-adapter
 DataMapper.setup(:default, ENV['DATABASE_URL'] || 'sqlite://'+Dir.pwd+'/testing.sqlite')
 
-# Occupation
-# ----------
-#
-# PUTs of units are only successful if Grid space is 
-# unoccupied or already owned by the player.
-# 
-# DELETEs are more costly, but will attack other players
-# if they are occupying the space (and occupy an unoccupied
-# space).
-#
-# Units have three attributes: attack, defense and hp.
-# These are used to calculate if a DELETE is successful.
-# Several DELETEs may be necessary to remove an occupying 
-# unit.
-#
 
 configure do
   enable :sessions
@@ -126,6 +113,22 @@ class GridSpace
     return "#fff" unless player
     return "##{Digest::MD5.hexdigest(player.id.to_s)[0..5]}"
   end
+  # Occupation
+  # ----------
+  #
+  # PUTs of units are only successful if Grid space is 
+  # unoccupied or already owned by the player.
+  # 
+  # DELETEs are more costly, but will attack other players
+  # if they are occupying the space (and occupy an unoccupied
+  # space).
+  #
+  # Units have three attributes: attack, defense and hp.
+  # These are used to calculate if a DELETE is successful.
+  # Several DELETEs may be necessary to remove an occupying 
+  # unit.
+  #
+
   def claim?(p1, unit)
     return false unless(self.player.nil? || self.player == p1)
     digest = Digest::MD5.hexdigest(Player.secret_sauce + unit)
