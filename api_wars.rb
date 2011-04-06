@@ -1,3 +1,5 @@
+# <a href="https://github.com/therabibanana/apiwars"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://d3nwyuy0nl342s.cloudfront.net/img/30f550e0d38ceb6ef5b81500c64d970b7fb0f028/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub"></a>
+#
 # API Wars
 # ========
 #
@@ -56,7 +58,8 @@ use OmniAuth::Strategies::GitHub,
 # datamapper gem installed for your database:
 # mysql => dm-mysql-adapter
 # posgres => dm-postgres-adapter
-DataMapper.setup(:default, ENV['DATABASE_URL'] || 'sqlite://'+Dir.pwd+'/testing.sqlite')
+DataMapper.setup(:default, 
+                 ENV['DATABASE_URL'] || 'sqlite://'+Dir.pwd+'/testing.sqlite')
 
 
 configure do
@@ -87,7 +90,8 @@ configure do
 
   # DELETEs, PUTs and POSTs are more costly than GETs because
   # they can do more.
-  set :method_values, {"GET" => 1, "POST" => "2", "PUT" => 3, "DELETE" => 5, "HEAD" => 1}
+  set :method_values, {"GET" => 1, "POST" => "2", 
+    "PUT" => 3, "DELETE" => 5, "HEAD" => 1}
 end
 
 
@@ -201,7 +205,9 @@ class Player
   end
   
   def generate_key!
-    self.api = Digest::MD5.hexdigest("player: "+id.to_s+provider+uid+Player.secret_sauce+created_on.to_s)
+    self.api = Digest::MD5.hexdigest("player: "+id.to_s+
+                                     provider+uid+Player.secret_sauce+
+                                     created_on.to_s)
     self.save
   end
 
@@ -279,7 +285,8 @@ helpers do
     # Remember the pin player can be any player,
     # not necessarily the same one as the API key.
     p = request.env['pin_player']
-    spent = p.calls?(settings.max_calls, settings.method_values[request.request_method])
+    spent = p.calls?(settings.max_calls, 
+                     settings.method_values[request.request_method])
     halt 402, 'Not enough calls' unless spent
   end
 
