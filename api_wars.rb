@@ -287,7 +287,7 @@ helpers do
     p = request.env['pin_player']
     spent = p.calls?(settings.max_calls, 
                      settings.method_values[request.request_method])
-    halt 402, 'Not enough calls' unless spent
+    halt(403, 'Not enough calls') unless spent
   end
 
   # Redirect to seed game if DataMapper can't find an
@@ -310,6 +310,7 @@ end
 before %r{/(grid|player)/.+} do
   api_authorized?
   has_calls?
+  cache_control :no_cache
 end
 
 # Get info about a given grid space.
