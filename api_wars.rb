@@ -78,7 +78,10 @@ configure do
   # 
   # You'll probably want at least 2. For github
   # authentication, use nicknames.
-  set :players, [['github', 'therabidbanana'], ['github', 'radicaleggnog']]
+  set :players, [ ['github', 'therabidbanana'], 
+                  ['github', 'shaineh'],
+                  ['github', 'eperiodfperiod'],
+                  ['github', 'radicaleggnog']]
 
   # Moves
   # ----
