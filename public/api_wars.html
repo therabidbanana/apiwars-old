@@ -104,7 +104,8 @@ to request an oauth application on their site:</p>
           <a class="pilcrow" href="#section-5">&#182;</a>
         </div>
         <p>Set your Github Key and Secret here, or with ENV variables
-(good for heroku.)</p>
+(good for heroku.) Note the ones in this file are registered to
+localhost:4567 for testing.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><span class="n">use</span> <span class="no">OmniAuth</span><span class="o">::</span><span class="no">Strategies</span><span class="o">::</span><span class="no">GitHub</span><span class="p">,</span> 
@@ -158,10 +159,16 @@ to players</p>
         <h2>Players</h2>
 
 <p>You&rsquo;ll probably want at least 2. For github
-authentication, use nicknames.</p>
+authentication, use nicknames.
+Other authentication types not supported, but
+should be trivial to add on with a bit of reading
+the OmniAuth docs.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:players</span><span class="p">,</span> <span class="o">[[</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;therabidbanana&#39;</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;radicaleggnog&#39;</span><span class="o">]]</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:players</span><span class="p">,</span> <span class="o">[</span> <span class="o">[</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;therabidbanana&#39;</span><span class="o">]</span><span class="p">,</span> 
+                  <span class="o">[</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;shaineh&#39;</span><span class="o">]</span><span class="p">,</span>
+                  <span class="o">[</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;eperiodfperiod&#39;</span><span class="o">]</span><span class="p">,</span>
+                  <span class="o">[</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;radicaleggnog&#39;</span><span class="o">]]</span></pre></div>
       </td>
     </tr>
     <tr id='section-Moves'>
@@ -176,7 +183,7 @@ limited to the amount of calls they can make
 in a single day.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:max_calls</span><span class="p">,</span> <span class="mi">100</span></pre></div>
+        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:max_calls</span><span class="p">,</span> <span class="mi">250</span></pre></div>
       </td>
     </tr>
     <tr id='section-10'>
@@ -185,10 +192,11 @@ in a single day.</p>
           <a class="pilcrow" href="#section-10">&#182;</a>
         </div>
         <p>DELETEs, PUTs and POSTs are more costly than GETs because
-they can do more.</p>
+they can do more.
+HEADs are cheap, but don&rsquo;t give much.</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:method_values</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;GET&quot;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> 
+        <div class='highlight'><pre>  <span class="n">set</span> <span class="ss">:method_values</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;GET&quot;</span> <span class="o">=&gt;</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;7&quot;</span><span class="p">,</span> 
     <span class="s2">&quot;PUT&quot;</span> <span class="o">=&gt;</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span> <span class="o">=&gt;</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;HEAD&quot;</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">}</span>
 <span class="k">end</span>
 
@@ -221,6 +229,14 @@ spaces before spending more costly PUTs.</p>
   <span class="k">def</span> <span class="nf">color</span>
     <span class="k">return</span> <span class="s2">&quot;#fff&quot;</span> <span class="k">unless</span> <span class="n">player</span>
     <span class="k">return</span> <span class="s2">&quot;#</span><span class="si">#{</span><span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="n">player</span><span class="o">.</span><span class="n">id</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">5</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">reset!</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">player</span> <span class="o">=</span> <span class="kp">nil</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">attack</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">defense</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">hits</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">save</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
@@ -246,37 +262,87 @@ unit.</p>
       <td class=code>
         <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">claim?</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
     <span class="k">return</span> <span class="kp">false</span> <span class="k">unless</span><span class="p">(</span><span class="nb">self</span><span class="o">.</span><span class="n">player</span><span class="o">.</span><span class="n">nil?</span> <span class="o">||</span> <span class="nb">self</span><span class="o">.</span><span class="n">player</span> <span class="o">==</span> <span class="n">p1</span><span class="p">)</span>
-    <span class="n">digest</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="no">Player</span><span class="o">.</span><span class="n">secret_sauce</span> <span class="o">+</span> <span class="n">unit</span><span class="p">)</span>
-    <span class="n">atk</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">dfn</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">3</span><span class="o">.</span><span class="n">.</span><span class="mi">4</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">hp</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">6</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">self</span><span class="o">.</span><span class="n">player</span> <span class="o">=</span> <span class="n">p1</span>
-    <span class="nb">self</span><span class="o">.</span><span class="n">attack</span> <span class="o">=</span> <span class="n">atk</span>
-    <span class="nb">self</span><span class="o">.</span><span class="n">defense</span> <span class="o">=</span> <span class="n">dfn</span>
-    <span class="nb">self</span><span class="o">.</span><span class="n">hits</span> <span class="o">=</span> <span class="n">hp</span>
+    <span class="k">return</span> <span class="kp">false</span> <span class="k">unless</span> <span class="n">unit</span>
+    <span class="no">Unit</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="ss">:player</span> <span class="o">=&gt;</span> <span class="n">p1</span><span class="p">)</span><span class="o">.</span><span class="n">occupy</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
     <span class="nb">self</span><span class="o">.</span><span class="n">save</span>
   <span class="k">end</span>
+
   <span class="k">def</span> <span class="nf">attack?</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
     <span class="k">return</span> <span class="kp">true</span> <span class="k">if</span><span class="p">(</span><span class="n">claim?</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">unit</span><span class="p">))</span>
-    <span class="n">digest</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="no">Player</span><span class="o">.</span><span class="n">secret_sauce</span> <span class="o">+</span> <span class="n">unit</span><span class="p">)</span>
-    <span class="n">atk</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">atk</span> <span class="o">=</span> <span class="n">atk</span>  <span class="o">-</span> <span class="nb">self</span><span class="o">.</span><span class="n">defense</span>
-    <span class="n">atk</span> <span class="o">=</span> <span class="p">(</span><span class="n">atk</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)?</span> <span class="n">atk</span> <span class="p">:</span> <span class="mi">1</span>
-    <span class="n">hp</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">hits</span> <span class="o">-</span> <span class="n">atk</span>
-    <span class="k">if</span> <span class="n">hp</span> <span class="o">&gt;</span> <span class="mi">0</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">hits</span> <span class="o">=</span> <span class="n">hp</span>
+    <span class="k">return</span> <span class="kp">false</span> <span class="k">unless</span> <span class="n">unit</span>
+    <span class="n">attacker</span> <span class="o">=</span> <span class="no">Unit</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="ss">:player</span> <span class="o">=&gt;</span> <span class="n">p1</span><span class="p">)</span>
+    <span class="n">defender</span> <span class="o">=</span> <span class="no">Unit</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+    <span class="n">defender</span><span class="o">.</span><span class="n">attacked_by!</span><span class="p">(</span><span class="n">attacker</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">defender</span><span class="o">.</span><span class="n">alive?</span> 
+      <span class="n">defender</span><span class="o">.</span><span class="n">occupy</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
       <span class="nb">self</span><span class="o">.</span><span class="n">save</span>
       <span class="k">return</span> <span class="kp">false</span>
     <span class="k">else</span>
-      <span class="n">atk</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-      <span class="n">dfn</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">3</span><span class="o">.</span><span class="n">.</span><span class="mi">4</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-      <span class="n">hp</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">6</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">player</span> <span class="o">=</span> <span class="n">p1</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">attack</span> <span class="o">=</span> <span class="n">atk</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">defense</span> <span class="o">=</span> <span class="n">dfn</span>
-      <span class="nb">self</span><span class="o">.</span><span class="n">hits</span> <span class="o">=</span> <span class="n">hp</span>
+      <span class="n">attacker</span><span class="o">.</span><span class="n">revive</span>
+      <span class="n">attacker</span><span class="o">.</span><span class="n">occupy</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
       <span class="nb">self</span><span class="o">.</span><span class="n">save</span>
+      <span class="k">return</span> <span class="kp">true</span>
     <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-13'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-13">&#182;</a>
+        </div>
+        <p>A representation of a unit for occupying grid spaces</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="k">class</span> <span class="nc">Unit</span>
+  <span class="kp">attr_reader</span> <span class="ss">:attack</span><span class="p">,</span> <span class="ss">:defense</span><span class="p">,</span> <span class="ss">:hits</span><span class="p">,</span> <span class="ss">:player</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span><span class="p">{})</span>
+    <span class="k">case</span> <span class="n">unit</span>
+    <span class="k">when</span> <span class="nb">String</span>
+      <span class="n">digest</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="no">Player</span><span class="o">.</span><span class="n">secret_sauce</span> <span class="o">+</span> <span class="n">unit</span><span class="p">)</span>
+      <span class="vi">@attack</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+      <span class="vi">@defense</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">3</span><span class="o">.</span><span class="n">.</span><span class="mi">4</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+      <span class="vi">@hits</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">6</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">when</span> <span class="no">GridSpace</span>
+      <span class="vi">@attack</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">attack</span>
+      <span class="vi">@defense</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">defense</span>
+      <span class="vi">@hits</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">hits</span>
+      <span class="vi">@player</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">player</span>
+    <span class="k">when</span> <span class="nb">Array</span>
+      <span class="vi">@attack</span><span class="p">,</span> <span class="vi">@defense</span><span class="p">,</span> <span class="vi">@hits</span> <span class="o">=</span> <span class="o">*</span><span class="n">unit</span>
+    <span class="k">else</span>
+      <span class="vi">@attack</span> <span class="o">=</span> <span class="vi">@defense</span> <span class="o">=</span> <span class="vi">@hits</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">end</span>
+    <span class="vi">@player</span> <span class="o">=</span> <span class="n">opts</span><span class="o">[</span><span class="ss">:player</span><span class="o">]</span> <span class="k">if</span> <span class="n">opts</span><span class="o">[</span><span class="ss">:player</span><span class="o">]</span>
+  <span class="k">end</span>
+  
+  <span class="k">def</span> <span class="nf">occupy</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">player</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">attack</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">defense</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">hits</span> <span class="o">=</span> <span class="n">player</span><span class="p">,</span> <span class="n">attack</span><span class="p">,</span> <span class="n">defense</span><span class="p">,</span> <span class="n">hits</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">alive?</span>
+    <span class="vi">@hits</span> <span class="o">&gt;</span> <span class="mi">0</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">revive</span>
+    <span class="vi">@hits</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">unless</span> <span class="n">alive?</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">hit_with</span><span class="p">(</span><span class="n">atk</span><span class="p">)</span>
+    <span class="n">atk</span> <span class="o">=</span> <span class="n">atk</span> <span class="o">-</span> <span class="nb">self</span><span class="o">.</span><span class="n">defense</span>
+    <span class="n">atk</span> <span class="o">=</span> <span class="p">(</span><span class="n">atk</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)?</span> <span class="n">atk</span> <span class="p">:</span> <span class="mi">1</span>
+    <span class="vi">@hits</span> <span class="o">=</span> <span class="vi">@hits</span> <span class="o">-</span><span class="n">atk</span>
+    <span class="vi">@hits</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">unless</span> <span class="n">alive?</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">attacked_by!</span><span class="p">(</span><span class="n">unit2</span><span class="p">)</span>
+    <span class="n">hit_with</span><span class="p">(</span><span class="n">unit2</span><span class="o">.</span><span class="n">attack</span><span class="p">)</span>
+    <span class="n">unit2</span><span class="o">.</span><span class="n">hit_with</span><span class="p">(</span><span class="nb">self</span><span class="o">.</span><span class="n">attack</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">to_json</span>
+    <span class="p">{</span><span class="ss">:attack</span> <span class="o">=&gt;</span> <span class="n">attack</span><span class="p">,</span> <span class="ss">:defense</span> <span class="o">=&gt;</span> <span class="n">defense</span><span class="p">,</span> <span class="ss">:hits</span> <span class="o">=&gt;</span> <span class="n">hits</span><span class="p">}</span><span class="o">.</span><span class="n">to_json</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
@@ -287,10 +353,11 @@ unit.</p>
   <span class="n">property</span> <span class="ss">:uid</span><span class="p">,</span> <span class="nb">String</span>
   <span class="n">property</span> <span class="ss">:api</span><span class="p">,</span> <span class="nb">String</span>
   <span class="n">property</span> <span class="ss">:sauce</span><span class="p">,</span> <span class="nb">String</span>
-  <span class="n">property</span> <span class="ss">:pin</span><span class="p">,</span> <span class="nb">String</span>
+  <span class="n">property</span> <span class="ss">:pin</span><span class="p">,</span> <span class="nb">String</span><span class="p">,</span> <span class="ss">:length</span> <span class="o">=&gt;</span> <span class="mi">4</span>
   <span class="n">property</span> <span class="ss">:created_on</span><span class="p">,</span> <span class="no">DateTime</span>
   <span class="n">property</span> <span class="ss">:reset_on</span><span class="p">,</span> <span class="no">DateTime</span><span class="p">,</span> <span class="ss">:default</span> <span class="o">=&gt;</span> <span class="no">DateTime</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">&quot;1/1/11&quot;</span><span class="p">)</span>
   <span class="n">property</span> <span class="ss">:daily_calls</span><span class="p">,</span> <span class="nb">Integer</span><span class="p">,</span> <span class="ss">:default</span> <span class="o">=&gt;</span> <span class="mi">0</span>
+  <span class="n">has</span> <span class="n">n</span><span class="p">,</span> <span class="ss">:grid_spaces</span>
   </pre></div>
       </td>
     </tr>
@@ -344,16 +411,85 @@ Probably a good way to stay ahead, or just mess people.</p>
       <span class="kp">false</span>
     <span class="k">end</span>
   <span class="k">end</span>
-  </pre></div>
+ </pre></div>
       </td>
     </tr>
-    <tr id='section-14'>
+    <tr id='section-15'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-14">&#182;</a>
+          <a class="pilcrow" href="#section-15">&#182;</a>
         </div>
-        <p>Resets the call count if it&rsquo;s been 24 hours since last
-reset.</p>
+        <p>The player may reset their pin at any time, but to do so they
+loose one of their squares. Pins must be 4 numeric digits,
+all other characters are replaced by 0.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">pin</span><span class="o">=</span><span class="p">(</span><span class="n">new_pin</span><span class="p">)</span>
+    <span class="n">new_pin</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">unless</span> <span class="n">new_pin</span>
+    <span class="n">new_pin</span> <span class="o">=</span> <span class="n">new_pin</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">3</span><span class="o">]</span> <span class="c1"># Trim</span>
+    <span class="n">new_pin</span> <span class="o">=</span> <span class="n">new_pin</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="sr">/[^0-9]/</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+    <span class="n">new_pin</span> <span class="o">=</span> <span class="n">new_pin</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span>
+    <span class="n">disown!</span> <span class="k">unless</span> <span class="nb">self</span><span class="o">.</span><span class="n">pin</span> <span class="o">==</span> <span class="n">new_pin</span>
+    <span class="k">super</span><span class="p">(</span><span class="n">new_pin</span><span class="p">)</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-16'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-16">&#182;</a>
+        </div>
+        <p>If a player resets their pin, this method is called</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">disown!</span>
+    <span class="k">if</span> <span class="n">space</span> <span class="o">=</span> <span class="nb">self</span><span class="o">.</span><span class="n">grid_spaces</span><span class="o">.</span><span class="n">first</span>
+      <span class="n">space</span><span class="o">.</span><span class="n">reset!</span>
+    <span class="k">end</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">grid_spaces</span><span class="o">.</span><span class="n">reload</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-17'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-17">&#182;</a>
+        </div>
+        <p>The player may reset their own sauce at any time. This
+changes the hashes that run the game for everyone, so
+to limit the destructive tendencies of players, they
+must be willing to give up their spaces.</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">sauce</span><span class="o">=</span><span class="p">(</span><span class="n">new_sauce</span><span class="p">)</span>
+    <span class="n">disown_all!</span> <span class="k">unless</span> <span class="nb">self</span><span class="o">.</span><span class="n">sauce</span> <span class="o">==</span> <span class="n">new_sauce</span>
+    <span class="k">super</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-18'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-18">&#182;</a>
+        </div>
+        <p>If a player resets their sauce, this method is called</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">disown_all!</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">grid_spaces</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span>
+      <span class="n">s</span><span class="o">.</span><span class="n">reset!</span>
+    <span class="k">end</span>
+    <span class="nb">self</span><span class="o">.</span><span class="n">grid_spaces</span><span class="o">.</span><span class="n">reload</span>
+  <span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-19'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-19">&#182;</a>
+        </div>
+        <p>Every 24 hours the player gets their call count reset. This happens
+on their next call.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre>  <span class="k">def</span> <span class="nf">reset_if_possible</span>
@@ -371,10 +507,10 @@ reset.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-15'>
+    <tr id='section-20'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-15">&#182;</a>
+          <a class="pilcrow" href="#section-20">&#182;</a>
         </div>
         <p>For storing game data. May be used for historical tracking
 in some future version.</p>
@@ -393,10 +529,10 @@ in some future version.</p>
 <span class="n">helpers</span> <span class="k">do</span></pre></div>
       </td>
     </tr>
-    <tr id='section-16'>
+    <tr id='section-21'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-16">&#182;</a>
+          <a class="pilcrow" href="#section-21">&#182;</a>
         </div>
         <p>All moves require valid authentication
 parameters to be passed are:
@@ -413,10 +549,10 @@ parameters to be passed are:
       <span class="k">if</span> <span class="n">pin_player</span></pre></div>
       </td>
     </tr>
-    <tr id='section-17'>
+    <tr id='section-22'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-17">&#182;</a>
+          <a class="pilcrow" href="#section-22">&#182;</a>
         </div>
         <p>Note that the pin doesn&rsquo;t have to be the same user
 as the api key.</p>
@@ -426,10 +562,10 @@ as the api key.</p>
       <span class="k">else</span></pre></div>
       </td>
     </tr>
-    <tr id='section-18'>
+    <tr id='section-23'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-18">&#182;</a>
+          <a class="pilcrow" href="#section-23">&#182;</a>
         </div>
         <p>But we count invalid pins against the API
 key player, so it&rsquo;s risky to waste
@@ -448,10 +584,10 @@ else&rsquo;s PIN.</p>
   <span class="k">def</span> <span class="nf">has_calls?</span></pre></div>
       </td>
     </tr>
-    <tr id='section-19'>
+    <tr id='section-24'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-19">&#182;</a>
+          <a class="pilcrow" href="#section-24">&#182;</a>
         </div>
         <p>Checks to make sure player has moves left
 before allowing move.</p>
@@ -463,14 +599,14 @@ not necessarily the same one as the API key.</p>
         <div class='highlight'><pre>    <span class="nb">p</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">env</span><span class="o">[</span><span class="s1">&#39;pin_player&#39;</span><span class="o">]</span>
     <span class="n">spent</span> <span class="o">=</span> <span class="nb">p</span><span class="o">.</span><span class="n">calls?</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">max_calls</span><span class="p">,</span> 
                      <span class="n">settings</span><span class="o">.</span><span class="n">method_values</span><span class="o">[</span><span class="n">request</span><span class="o">.</span><span class="n">request_method</span><span class="o">]</span><span class="p">)</span>
-    <span class="n">halt</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="s1">&#39;Not enough calls&#39;</span><span class="p">)</span> <span class="k">unless</span> <span class="n">spent</span>
+    <span class="n">halt</span><span class="p">(</span><span class="mi">402</span><span class="p">,</span> <span class="s1">&#39;Not enough calls&#39;</span><span class="p">)</span> <span class="k">unless</span> <span class="n">spent</span>
   <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-20'>
+    <tr id='section-25'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-20">&#182;</a>
+          <a class="pilcrow" href="#section-25">&#182;</a>
         </div>
         <p>Redirect to seed game if DataMapper can&rsquo;t find an
 existing game (so all we need to do to install is
@@ -491,25 +627,76 @@ visit the home page once)</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-21'>
+    <tr id='section-26'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-21">&#182;</a>
+          <a class="pilcrow" href="#section-26">&#182;</a>
         </div>
         <p>Grid and Player resources require authorization</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre><span class="n">before</span> <span class="sr">%r{/(grid|player)/.+}</span> <span class="k">do</span>
+        <div class='highlight'><pre><span class="n">before</span> <span class="sr">%r{/(grid|player|test)/.+}</span> <span class="k">do</span>
   <span class="n">api_authorized?</span>
   <span class="n">has_calls?</span>
   <span class="n">cache_control</span> <span class="ss">:no_cache</span>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-22'>
+    <tr id='section-27'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-22">&#182;</a>
+          <a class="pilcrow" href="#section-27">&#182;</a>
+        </div>
+        <p>Get info about a given grid space.
+Note that the :space id is hashed with the
+secret sauce and converted to an integer, then
+we test to see if it is a valid grid space.</p>
+
+<p>Differs from a GET in that you do not receive info
+about whether another player is already occupying
+a square.</p>
+
+<p>HEAD /grid/:space</p>
+
+<p>  (Requires key and pin arguments)</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">head</span> <span class="s2">&quot;/grid/:space&quot;</span> <span class="k">do</span>
+  <span class="n">space</span> <span class="o">=</span> <span class="n">params</span><span class="o">[</span><span class="ss">:space</span><span class="o">]</span> <span class="o">+</span> <span class="no">Player</span><span class="o">.</span><span class="n">secret_sauce</span>
+  <span class="n">digest</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
+  <span class="nb">id</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">3</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">g</span> <span class="o">=</span><span class="no">GridSpace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-28'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-28">&#182;</a>
+        </div>
+        <p>Returns 200 with empty body</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">halt</span> <span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+  <span class="k">else</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-29'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-29">&#182;</a>
+        </div>
+        <p>Oherwise, returns 404</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>    <span class="n">halt</span> <span class="mi">404</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-30'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-30">&#182;</a>
         </div>
         <p>Get info about a given grid space.
 Note that the :space id is hashed with the
@@ -528,10 +715,10 @@ we test to see if it is a valid grid space.</p>
   <span class="k">if</span><span class="p">(</span><span class="n">g</span> <span class="o">=</span><span class="no">GridSpace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span></pre></div>
       </td>
     </tr>
-    <tr id='section-23'>
+    <tr id='section-31'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-23">&#182;</a>
+          <a class="pilcrow" href="#section-31">&#182;</a>
         </div>
         <p>Returns 200 with hash of space info on success</p>
       </td>
@@ -541,10 +728,10 @@ we test to see if it is a valid grid space.</p>
   <span class="k">else</span></pre></div>
       </td>
     </tr>
-    <tr id='section-24'>
+    <tr id='section-32'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-24">&#182;</a>
+          <a class="pilcrow" href="#section-32">&#182;</a>
         </div>
         <p>Oherwise, returns 404</p>
       </td>
@@ -554,10 +741,10 @@ we test to see if it is a valid grid space.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-25'>
+    <tr id='section-33'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-25">&#182;</a>
+          <a class="pilcrow" href="#section-33">&#182;</a>
         </div>
         <p>Place a unit on a space, if unoccupied and valid.</p>
 
@@ -572,13 +759,14 @@ we test to see if it is a valid grid space.</p>
   <span class="n">digest</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
   <span class="nb">id</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">3</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
   <span class="k">if</span><span class="p">(</span><span class="n">g</span> <span class="o">=</span><span class="no">GridSpace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+    <span class="n">halt</span> <span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;Requires unit&#39;</span> <span class="k">unless</span> <span class="n">params</span><span class="o">[</span><span class="s2">&quot;unit&quot;</span><span class="o">]</span>
     <span class="k">if</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">claim?</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">env</span><span class="o">[</span><span class="s1">&#39;api_player&#39;</span><span class="o">]</span><span class="p">,</span> <span class="n">params</span><span class="o">[</span><span class="s2">&quot;unit&quot;</span><span class="o">]</span><span class="p">))</span></pre></div>
       </td>
     </tr>
-    <tr id='section-26'>
+    <tr id='section-34'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-26">&#182;</a>
+          <a class="pilcrow" href="#section-34">&#182;</a>
         </div>
         <p>Returns 201 and a hash of space info on success</p>
       </td>
@@ -588,23 +776,23 @@ we test to see if it is a valid grid space.</p>
     <span class="k">else</span></pre></div>
       </td>
     </tr>
-    <tr id='section-27'>
+    <tr id='section-35'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-27">&#182;</a>
+          <a class="pilcrow" href="#section-35">&#182;</a>
         </div>
         <p>Returns 403 with error if someone else occupies</p>
       </td>
       <td class=code>
-        <div class='highlight'><pre>      <span class="n">halt</span> <span class="mi">403</span><span class="p">,</span> <span class="s1">&#39;Someone else owns the space&#39;</span>
+        <div class='highlight'><pre>      <span class="n">halt</span> <span class="mi">405</span><span class="p">,</span> <span class="s1">&#39;Someone else owns the space&#39;</span>
     <span class="k">end</span>
   <span class="k">else</span></pre></div>
       </td>
     </tr>
-    <tr id='section-28'>
+    <tr id='section-36'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-28">&#182;</a>
+          <a class="pilcrow" href="#section-36">&#182;</a>
         </div>
         <p>Returns 404 if space id invalid</p>
       </td>
@@ -614,10 +802,10 @@ we test to see if it is a valid grid space.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-29'>
+    <tr id='section-37'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-29">&#182;</a>
+          <a class="pilcrow" href="#section-37">&#182;</a>
         </div>
         <p>Place a unit on a space, attacking any existing unit on
 the space (note attack may not be successful, depending
@@ -634,6 +822,7 @@ on occupying unit&rsquo;s attributes)</p>
   <span class="n">digest</span> <span class="o">=</span> <span class="no">Digest</span><span class="o">::</span><span class="no">MD5</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
   <span class="nb">id</span> <span class="o">=</span> <span class="nb">Integer</span><span class="p">(</span><span class="s2">&quot;0x</span><span class="si">#{</span><span class="n">digest</span><span class="o">[</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">3</span><span class="o">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
   <span class="k">if</span><span class="p">(</span><span class="n">g</span> <span class="o">=</span><span class="no">GridSpace</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
+    <span class="n">halt</span> <span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;Requires unit&#39;</span> <span class="k">unless</span> <span class="n">params</span><span class="o">[</span><span class="s2">&quot;unit&quot;</span><span class="o">]</span>
     <span class="k">if</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">attack?</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">env</span><span class="o">[</span><span class="s1">&#39;api_player&#39;</span><span class="o">]</span> <span class="p">,</span> <span class="n">params</span><span class="o">[</span><span class="s2">&quot;unit&quot;</span><span class="o">]</span><span class="p">))</span>
       <span class="n">status</span> <span class="mi">200</span>
       <span class="n">g</span><span class="o">.</span><span class="n">to_json</span>
@@ -646,10 +835,67 @@ on occupying unit&rsquo;s attributes)</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-30'>
+    <tr id='section-38'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-30">&#182;</a>
+          <a class="pilcrow" href="#section-38">&#182;</a>
+        </div>
+        <p>Get info about a given unit without having to put/post.
+Note that the :unit id is hashed with the
+secret sauce to get attributes.</p>
+
+<p>GET /test/:unit</p>
+
+<p>  (Requires key and pin arguments)</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">get</span> <span class="s2">&quot;/test/:unit&quot;</span> <span class="k">do</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-39'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-39">&#182;</a>
+        </div>
+        <p>Returns 200 with hash of space info on success</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">status</span> <span class="mi">200</span>
+  <span class="no">Unit</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">params</span><span class="o">[</span><span class="ss">:unit</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">to_json</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-40'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-40">&#182;</a>
+        </div>
+        <p>Trying to post to test yields a 418.</p>
+
+<p>POST /test/:unit</p>
+
+<p>  (Requires key and pin arguments)</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre><span class="n">post</span> <span class="s2">&quot;/test/:unit&quot;</span> <span class="k">do</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-41'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-41">&#182;</a>
+        </div>
+        <p>Oherwise, returns 404</p>
+      </td>
+      <td class=code>
+        <div class='highlight'><pre>  <span class="n">halt</span> <span class="mi">418</span><span class="p">,</span> <span class="s2">&quot;I&#39;m a </span><span class="si">#{</span><span class="nb">rand</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">.</span><span class="mi">5</span> <span class="o">?</span> <span class="s1">&#39;short and stout &#39;</span> <span class="p">:</span> <span class="s1">&#39;&#39;</span> <span class="si">}</span><span class="s2">teapot&quot;</span>
+<span class="k">end</span></pre></div>
+      </td>
+    </tr>
+    <tr id='section-42'>
+      <td class=docs>
+        <div class="pilwrap">
+          <a class="pilcrow" href="#section-42">&#182;</a>
         </div>
         <p>Run initialization of database if
 it hasn&rsquo;t been done yet. Last step before
@@ -680,23 +926,24 @@ time site is visited.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-31'>
+    <tr id='section-43'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-31">&#182;</a>
+          <a class="pilcrow" href="#section-43">&#182;</a>
         </div>
         <p>Show a basic message with game status.</p>
       </td>
       <td class=code>
         <div class='highlight'><pre><span class="n">get</span> <span class="s2">&quot;/&quot;</span> <span class="k">do</span>
-  <span class="n">haml</span> <span class="ss">:index</span><span class="p">,</span> <span class="ss">:locals</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="ss">:spaces</span> <span class="o">=&gt;</span> <span class="no">GridSpace</span><span class="o">.</span><span class="n">all</span><span class="p">}</span>
+  <span class="n">expires</span> <span class="mi">1800</span><span class="p">,</span> <span class="ss">:public</span><span class="p">,</span> <span class="ss">:must_revalidate</span>
+  <span class="n">haml</span> <span class="ss">:index</span><span class="p">,</span> <span class="ss">:locals</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="ss">:spaces</span> <span class="o">=&gt;</span> <span class="no">GridSpace</span><span class="o">.</span><span class="n">all</span><span class="p">,</span> <span class="ss">:players</span> <span class="o">=&gt;</span> <span class="no">Player</span><span class="o">.</span><span class="n">all</span><span class="p">}</span>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-32'>
+    <tr id='section-44'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-32">&#182;</a>
+          <a class="pilcrow" href="#section-44">&#182;</a>
         </div>
         <p>This is how we allow players to access their
 API keys &ndash; they log in via Github.</p>
@@ -726,10 +973,10 @@ API keys &ndash; they log in via Github.</p>
 <span class="k">end</span></pre></div>
       </td>
     </tr>
-    <tr id='section-33'>
+    <tr id='section-45'>
       <td class=docs>
         <div class="pilwrap">
-          <a class="pilcrow" href="#section-33">&#182;</a>
+          <a class="pilcrow" href="#section-45">&#182;</a>
         </div>
         <p>You may update your pin and sauce at any time.
 Updating your pin will ensure nobody can use it to make
