@@ -47,7 +47,8 @@ require 'digest/md5'
 require 'oa-oauth'
 
 # Set your Github Key and Secret here, or with ENV variables
-# (good for heroku.)
+# (good for heroku.) Note the ones in this file are registered to
+# localhost:4567 for testing.
 use OmniAuth::Strategies::GitHub, 
   (ENV['GITHUB_KEY'] || '5ce55eaa17d66bf4f9cf'), 
   (ENV['GITHUB_SECRET'] || '350137e0a82fd6402fddaa2992ff80b2ed46eff0')
@@ -78,6 +79,10 @@ configure do
   # 
   # You'll probably want at least 2. For github
   # authentication, use nicknames. 
+  # Other authentication types not supported, but 
+  # should be trivial to add on with a bit of reading
+  # the OmniAuth docs.
+  #
   set :players, [ ['github', 'therabidbanana'], 
                   ['github', 'shaineh'],
                   ['github', 'eperiodfperiod'],
@@ -93,6 +98,7 @@ configure do
 
   # DELETEs, PUTs and POSTs are more costly than GETs because
   # they can do more.
+  # HEADs are cheap, but don't give much.
   set :method_values, {"GET" => 2, "POST" => "7", 
     "PUT" => 3, "DELETE" => 5, "HEAD" => 1}
 end
@@ -147,38 +153,78 @@ class GridSpace
   def claim?(p1, unit)
     return false unless(self.player.nil? || self.player == p1)
     return false unless unit
-    digest = Digest::MD5.hexdigest(Player.secret_sauce + unit)
-    atk = Integer("0x#{digest[0..1]}")
-    dfn = Integer("0x#{digest[3..4]}")
-    hp = Integer("0x#{digest[6..7]}")
-    self.player = p1
-    self.attack = atk
-    self.defense = dfn
-    self.hits = hp
+    Unit.new(unit, :player => p1).occupy(self)
     self.save
   end
+
   def attack?(p1, unit)
     return true if(claim?(p1, unit))
     return false unless unit
-    digest = Digest::MD5.hexdigest(Player.secret_sauce + unit)
-    atk = Integer("0x#{digest[0..1]}")
-    atk = atk  - self.defense
-    atk = (atk > 0)? atk : 1
-    hp = self.hits - atk
-    if hp > 0
-      self.hits = hp
+    attacker = Unit.new(unit, :player => p1)
+    defender = Unit.new(self)
+    defender.attacked_by!(attacker)
+    if defender.alive? 
+      defender.occupy(self)
       self.save
       return false
     else
-      atk = Integer("0x#{digest[0..1]}")
-      dfn = Integer("0x#{digest[3..4]}")
-      hp = Integer("0x#{digest[6..7]}")
-      self.player = p1
-      self.attack = atk
-      self.defense = dfn
-      self.hits = hp
+      attacker.revive
+      attacker.occupy(self)
       self.save
+      return true
     end
+  end
+end
+
+# A representation of a unit for occupying grid spaces
+class Unit
+  attr_reader :attack, :defense, :hits, :player
+  def initialize(unit, opts ={})
+    case unit
+    when String
+      digest = Digest::MD5.hexdigest(Player.secret_sauce + unit)
+      @attack = Integer("0x#{digest[0..1]}")
+      @defense = Integer("0x#{digest[3..4]}")
+      @hits = Integer("0x#{digest[6..7]}")
+    when GridSpace
+      @attack = unit.attack
+      @defense = unit.defense
+      @hits = unit.hits
+      @player = unit.player
+    when Array
+      @attack, @defense, @hits = *unit
+    else
+      @attack = @defense = @hits = 0
+    end
+    @player = opts[:player] if opts[:player]
+  end
+  
+  def occupy(g)
+    g.player, g.attack, g.defense, g.hits = player, attack, defense, hits
+  end
+
+  def alive?
+    @hits > 0
+  end
+
+  def revive
+    @hits = 1 unless alive?
+  end
+
+  def hit_with(atk)
+    atk = atk - self.defense
+    atk = (atk > 0)? atk : 1
+    @hits = @hits -atk
+    @hits = 0 unless alive?
+  end
+
+  def attacked_by!(unit2)
+    hit_with(unit2.attack)
+    unit2.hit_with(self.attack)
+  end
+
+  def to_json
+    {:attack => attack, :defense => defense, :hits => hits}.to_json
   end
 end
 
@@ -361,10 +407,35 @@ before %r{!(/game/seed/?)} do
 end
 
 # Grid and Player resources require authorization
-before %r{/(grid|player)/.+} do
+before %r{/(grid|player|test)/.+} do
   api_authorized?
   has_calls?
   cache_control :no_cache
+end
+
+# Get info about a given grid space.
+# Note that the :space id is hashed with the 
+# secret sauce and converted to an integer, then
+# we test to see if it is a valid grid space.
+#
+# Differs from a GET in that you do not receive info
+# about whether another player is already occupying 
+# a square.
+#
+# HEAD /grid/:space 
+#   
+#   (Requires key and pin arguments)
+head "/grid/:space" do
+  space = params[:space] + Player.secret_sauce
+  digest = Digest::MD5.hexdigest(space)
+  id = Integer("0x#{digest[0..3]}")
+  if(g =GridSpace.get(id))
+    # Returns 200 with empty body
+    halt 200, ''
+  else
+    # Oherwise, returns 404
+    halt 404, ""
+  end
 end
 
 # Get info about a given grid space.
@@ -400,13 +471,14 @@ put "/grid/:space" do
   digest = Digest::MD5.hexdigest(space)
   id = Integer("0x#{digest[0..3]}")
   if(g =GridSpace.get(id))
+    halt 400, 'Requires unit' unless params["unit"]
     if(g.claim?(request.env['api_player'], params["unit"]))
       # Returns 201 and a hash of space info on success
       status 201
       g.to_json
     else
       # Returns 403 with error if someone else occupies
-      halt 403, 'Someone else owns the space'
+      halt 405, 'Someone else owns the space'
     end
   else
     # Returns 404 if space id invalid
@@ -427,6 +499,7 @@ delete "/grid/:space" do
   digest = Digest::MD5.hexdigest(space)
   id = Integer("0x#{digest[0..3]}")
   if(g =GridSpace.get(id))
+    halt 400, 'Requires unit' unless params["unit"]
     if(g.attack?(request.env['api_player'] , params["unit"]))
       status 200
       g.to_json
@@ -437,6 +510,32 @@ delete "/grid/:space" do
     halt 404, "Invalid Space"
   end
 end
+
+# Get info about a given unit without having to put/post.
+# Note that the :unit id is hashed with the 
+# secret sauce to get attributes. 
+#
+# GET /test/:unit 
+#   
+#   (Requires key and pin arguments)
+get "/test/:unit" do
+  # Returns 200 with hash of space info on success
+  status 200
+  Unit.new(params[:unit]).to_json
+end
+
+
+# Trying to post to test yields a 418.
+#
+# POST /test/:unit 
+#   
+#   (Requires key and pin arguments)
+post "/test/:unit" do
+  # Oherwise, returns 404
+  halt 418, "I'm a #{rand() > 0.5 ? 'short and stout ' : '' }teapot"
+end
+
+
 
 # Run initialization of database if
 # it hasn't been done yet. Last step before
@@ -463,6 +562,7 @@ get "/game/seed" do
     return 'game ready with '+settings.max_spaces.to_s + ' squares'
   end
 end
+
 
 # Show a basic message with game status.
 get "/" do
