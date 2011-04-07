@@ -24,11 +24,7 @@
       %h2 Players:
       %ul
         - players.each do |p|
-          %li= p.uid
-      %h2 Board:
-      %section.board
-        - spaces.each do |s|
-          .space{:id => s.id, :style => "background-color: #{s.color};"}
-            = s.player ? s.player.id : '&nbsp;'
+          %li
+            #{p.uid} - #{p.grid_spaces.size}
     %section{:style => 'clear:both'}
       %h1 What's this?
