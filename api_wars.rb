@@ -89,11 +89,11 @@ configure do
   # Play is accomplished with RESTful calls. Players are 
   # limited to the amount of calls they can make
   # in a single day.
-  set :max_calls, 100
+  set :max_calls, 250
 
   # DELETEs, PUTs and POSTs are more costly than GETs because
   # they can do more.
-  set :method_values, {"GET" => 1, "POST" => "2", 
+  set :method_values, {"GET" => 2, "POST" => "7", 
     "PUT" => 3, "DELETE" => 5, "HEAD" => 1}
 end
 
@@ -341,7 +341,7 @@ helpers do
     p = request.env['pin_player']
     spent = p.calls?(settings.max_calls, 
                      settings.method_values[request.request_method])
-    halt(403, 'Not enough calls') unless spent
+    halt(402, 'Not enough calls') unless spent
   end
 
   # Redirect to seed game if DataMapper can't find an
